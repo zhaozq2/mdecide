@@ -1,0 +1,10 @@
+Name: mdecide
+Host: 0.0.0.0
+Port: 8888
+
+Mysql:
+  DataSource: root:root@tcp(127.0.0.1:3306)/mdecide?charset=utf8mb4&parseTime=true&loc=Local
+
+Log:
+  Mode: console
+  Level: info

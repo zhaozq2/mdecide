@@ -1,0 +1,106 @@
+<view class="container">
+  <view class="round-indicator" wx:if="{{roundList.length > 0}}">
+    <scroll-view scroll-x="true" class="round-tabs">
+      <view wx:for="{{roundList}}" wx:key="index" 
+        class="round-tab {{currentRoundIndex === index ? 'active' : ''}}"
+        bindtap="switchRound" data-index="{{index}}">
+        第{{index + 1}}轮
+        <text wx:if="{{item.status === 'completed'}}" class="round-check">✓</text>
+      </view>
+      <view wx:if="{{currentRound.status === 'completed'}}" 
+        class="round-tab add-round" bindtap="addRound">+ 新一轮</view>
+    </scroll-view>
+  </view>
+
+  <view class="steps">
+    <view class="step {{currentPhase >= 0 ? 'active' : ''}}">
+      <view class="step-circle">1</view>
+      <view class="step-label">选项</view>
+    </view>
+    <view class="step-line"></view>
+    <view class="step {{currentPhase >= 1 ? 'active' : ''}}">
+      <view class="step-circle">2</view>
+      <view class="step-label">重要性</view>
+    </view>
+    <view class="step-line"></view>
+    <view class="step {{currentPhase >= 2 ? 'active' : ''}}">
+      <view class="step-circle">3</view>
+      <view class="step-label">必要性</view>
+    </view>
+    <view class="step-line"></view>
+    <view class="step {{currentPhase >= 3 ? 'active' : ''}}">
+      <view class="step-circle">4</view>
+      <view class="step-label">结果</view>
+    </view>
+  </view>
+
+  <view class="content">
+    <view wx:if="{{currentPhase === 0}}" class="step-content">
+      <view class="title">添加选项</view>
+      <view class="input-group">
+        <input class="input" placeholder="输入选项名称" bindinput="onInput" value="{{newOption}}" />
+        <button class="btn-add" bindtap="addOption">添加</button>
+      </view>
+      <view class="options-list">
+        <view wx:for="{{currentRound.options}}" wx:key="index" class="option-item">
+          <text>{{item}}</text>
+          <text class="delete-btn" bindtap="removeOption" data-index="{{index}}">✕</text>
+        </view>
+      </view>
+      <button class="btn-primary" bindtap="startImportance" disabled="{{currentRound.options.length < 2}}">开始评分</button>
+    </view>
+
+    <view wx:if="{{currentPhase === 1}}" class="step-content">
+      <view class="title">第{{currentRoundIndex + 1}}轮 - 重要性评分 (1-5分)</view>
+      <view class="hint">对每个选项的重要性进行打分</view>
+      <view wx:for="{{currentRound.options}}" wx:key="index" class="score-item">
+        <text class="option-name">{{item}}</text>
+        <view class="rate-group">
+          <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" wx:for-item="score" 
+            class="rate-star {{score <= currentRound.importanceScores[index] ? 'active' : ''}}" 
+            bindtap="setImportance" data-index="{{index}}" data-score="{{score}}">★</text>
+        </view>
+      </view>
+      <button class="btn-primary" bindtap="finishImportance">完成重要性评分</button>
+    </view>
+
+    <view wx:if="{{currentPhase === 2}}" class="step-content">
+      <view class="title">第{{currentRoundIndex + 1}}轮 - 必要性评分 (0或1)</view>
+      <view class="hint">判断每个选项是否必要</view>
+      <view wx:for="{{currentRound.options}}" wx:key="index" class="score-item">
+        <text class="option-name">{{item}}</text>
+        <view class="radio-group">
+          <label class="radio-label">
+            <radio value="1" checked="{{currentRound.necessityScores[index] === 1}}" bindtap="setNecessity" data-index="{{index}}" data-value="1" />
+            必要
+          </label>
+          <label class="radio-label">
+            <radio value="0" checked="{{currentRound.necessityScores[index] === 0}}" bindtap="setNecessity" data-index="{{index}}" data-value="0" />
+            不必要
+          </label>
+        </view>
+      </view>
+      <button class="btn-primary" bindtap="calculateResults">计算结果</button>
+    </view>
+
+    <view wx:if="{{currentPhase === 3}}" class="step-content">
+      <view class="title">第{{currentRoundIndex + 1}}轮 - 筛选结果</view>
+      <view wx:for="{{currentRound.results}}" wx:key="index" class="result-item">
+        <view class="result-header">
+          <text class="result-name">{{item.option}}</text>
+          <text class="result-tag {{item.isWinner ? 'winner' : ''}}">{{item.isWinner ? '最佳' : '第' + item.rank + '名'}}</text>
+        </view>
+        <view class="result-detail">
+          <text>重要性: {{item.importanceScore}}分</text>
+          <text>必要性: {{item.necessityScore === 1 ? '必要' : '不必要'}}</text>
+          <text class="total-score">总分: {{item.totalScore}}</text>
+        </view>
+      </view>
+      <view class="summary">
+        <view class="summary-title">总结</view>
+        <text>{{currentRound.summary}}</text>
+      </view>
+      <button class="btn-primary" bindtap="finishRound" wx:if="{{currentRoundIndex === roundList.length - 1}}">完成本轮</button>
+    </view>
+  </view>
+</view>
